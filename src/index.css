@@ -35,6 +35,14 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   background: transparent;
 }
 
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
 @keyframes slideInFade {
   from {
     opacity: 0;

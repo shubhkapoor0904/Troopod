@@ -192,9 +192,12 @@ export default function Reviews({
         </div>
 
         {/* Display exactly 3 reviews at a time */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory pb-6 md:pb-0 hide-scrollbar">
           {reviews.slice(0, 3).map((review, i) => (
-            <div key={`${review.name}-${review.date}-${i}`} className="bg-white p-8 rounded-2xl shadow-sm border border-border/50 flex flex-col justify-between animate-slide-in-fade">
+            <div 
+              key={`${review.name}-${review.date}-${i}`} 
+              className="bg-white p-8 rounded-2xl shadow-sm border border-border/50 flex flex-col justify-between animate-slide-in-fade flex-shrink-0 w-[85vw] sm:w-[380px] md:w-auto snap-center"
+            >
               <div>
                 <div className="flex mb-4 gap-0.5">
                   {[...Array(5)].map((_, idx) => (

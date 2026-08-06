@@ -1,69 +1,67 @@
-# Walkthrough — Monolithic App Modularization & Vercel Ready
+# Walkthrough — Monolithic App Modularization & Mobile Responsiveness
 
-I have successfully modularized the monolithic codebase and implemented a **Shopping Cart Drawer**, **Checkout Simulator**, **Customizable Delivery Intervals**, an **Interactive Gallery Carousel**, and **Vercel Deploy Readiness Configurations**.
+I have successfully modularized the monolithic codebase and implemented mobile responsive features including: **Swipe Gestures for Image Galleries**, **Scroll-Snapping Carousel for Reviews**, **Responsive Grid Columns for Related Products**, **Auto-Dismissible Navigation Drawer**, **Stacked Cards for Product Comparison**, and **Virtual Numeric Keypad Optimization** for checkout forms.
 
-## New Files & File Structure
+## File Structure
 
 ```
 src/
 ├── components/          # Reusable UI component layer
-│   ├── CartDrawer.tsx   # Right-sliding cart pane with checkout modal & intervals
+│   ├── CartDrawer.tsx   # Mobile-keypad optimized drawer with billing/payment simulation
 │   ├── FaqSection.tsx   # Collapsible accordion list
 │   ├── Footer.tsx       # Semantics-friendly footer + newsletter form
-│   ├── Lightbox.tsx     # Zoomable modal overlay & key navigation
-│   ├── Navbar.tsx       # Logo, routes, and mobile navigation drawer
-│   ├── ProductHero.tsx  # Hero details with interactive gallery overlays & intervals
-│   └── Reviews.tsx      # Results stats breakdown and custom inputs form
+│   ├── Lightbox.tsx     # Swipe-gesture & key-navigation enabled lightbox modal
+│   ├── Navbar.tsx       # Logo, routes, and auto-dismissible mobile side menu
+│   ├── ProductHero.tsx  # Swipe-gesture enabled hero gallery with snap thumbnails
+│   └── Reviews.tsx      # Results stats & scroll-snap enabled mobile reviews carousel
 ├── data/
 │   └── productData.ts   # Dry data separation for FAQs, Related Products, Gallery
 ├── types/
-│   └── index.ts         # Shared TypeScript interfaces (added CartItem interval)
-├── App.tsx              # Clean state controller / root layout aggregator
+│   └── index.ts         # Shared TypeScript interfaces
+├── App.tsx              # Mobile-responsive layouts controller & comparison grids
 ├── main.tsx             # Entry mount
-└── index.css            # Custom keyframes & Tailwind imports
-vercel.json              # [NEW] Vercel SPA routing and caching configuration
+└── index.css            # Custom keyframes, Tailwind imports, and hide-scrollbar utilities
+vercel.json              # Vercel SPA routing and caching configuration
 ```
 
 ---
 
-## Detailed Deploy & Cart Features Completed
+## Detailed Mobile & Layout Optimizations
 
-### 1. Vercel Production Readiness [NEW]
-*   **Vercel Routing Configurations**: Created [vercel.json](file:///d:/Troopod/vercel.json) to handle Single Page App routing policies, rewriting all sub-paths back to `index.html` to avoid 404 router errors.
-*   **Case-Sensitivity Audits**: Verified all imports inside `src/` map to components using 100% exact casing. This prevents case-sensitivity compilation breaks on Linux build servers (Vercel's default environment).
-*   **Git-Tracked Figma Configs**: Confirmed `.figma/make/site.json` is not ignored in `.gitignore`, guaranteeing the figma site configurations build successfully during compilation.
-*   **HTML Comments Compiler**: The Vite bundler configuration dynamically parses and compiles HTML comment variables (like `<!-- figma:title -->`) at build time, yielding static index.html pages.
+### 1. Navigation Backdrop Close [NEW]
+*   **Outside Click-to-Close**: In [Navbar.tsx](file:///d:/Troopod/src/components/Navbar.tsx), added an overlay click handler so that tapping anywhere outside the mobile side-menu drawer dismisses it instantly, improving user navigation flow.
+*   **Propagation Prevention**: Blocked event bubble triggers inside the menu panel so tapping options does not accidentally close the container.
 
-### 2. Unified Cart State Management
-*   Replaced the mock `cartCount` state inside [App.tsx](file:///d:/Troopod/src/App.tsx) with a dynamic `cartItems` array.
-*   Added `onAddToCart` and `onQuickAdd` merging logic: adding items increments quantities if the item already exists in the cart, otherwise appends them.
-*   Clicking **Add to Cart** on the main hero or **Quick Add** on related products adds the item and automatically opens the cart drawer with a smooth entry transition.
+### 2. Native Swipe Gesture support for Galleries [NEW]
+*   **Main Hero Image**: Configured `onTouchStart`, `onTouchMove`, and `onTouchEnd` handlers on the product container inside [ProductHero.tsx](file:///d:/Troopod/src/components/ProductHero.tsx). Mobile shoppers can now swipe left/right to browse high-res product shoots.
+*   **Lightbox Viewer**: Implemented the same gesture framework inside [Lightbox.tsx](file:///d:/Troopod/src/components/Lightbox.tsx) for natural full-screen navigation.
+*   **Scroll Snapping & Scrollbar Hiding**: Applied a `.hide-scrollbar` custom CSS selector to the thumbnails ribbon, combining it with `snap-x snap-mandatory` and `snap-always snap-start` parameters for smooth, momentum-based scrolling.
 
-### 3. Slide-Over Cart Drawer Panel
-*   Developed [CartDrawer.tsx](file:///d:/Troopod/src/components/CartDrawer.tsx). It slides in from the right when toggled (triggered by adding items or clicking the bag icon in the navbar).
-*   Displays an empty-cart state if no items exist, urging users to continue browsing.
-*   Calculates **subtotals**, **dynamic shipping** (Free over $50, else $4.99), **estimated tax** (8%), and the **grand total** automatically.
-*   Allows users to increment/decrement quantities or completely delete items from inside the cart tray.
+### 3. Stacked Mobile Card Layouts for Comparison Table [NEW]
+*   **Feature Card Stacks**: Replaced the horizontal scrolling comparison table on mobile layouts in [App.tsx](file:///d:/Troopod/src/App.tsx) with vertical cards.
+*   **Color-Coded Badges**: Stacks side-by-side comparative boxes for *Wellbeing Marine* (green theme) and *Standard Bovine* (gray theme) to make details highly legible on narrow screens.
+*   **Breakpoint Toggle**: Renders the complete, clean 3-column table on desktop viewports (`hidden md:table` / `block md:hidden`).
 
-### 4. Integrated Checkout Wizard & Simulation
-*   Provides a checkout screen within the drawer. Clicking "Proceed to Checkout" loads a clean, secure-looking billing and payment form.
-*   Includes client-side checks to validate full address details and card specifications.
-*   Toggling order submission simulates transaction checks (1.8s load state delay) and returns a premium Order Confirmation banner before clearing the cart state.
+### 4. Reviews Horizontal Snap Carousel [NEW]
+*   **Carousel Transition**: Converted the vertical 3-column stack in [Reviews.tsx](file:///d:/Troopod/src/components/Reviews.tsx) to a horizontal swipe container on mobile screens.
+*   **Sizing & Peeking**: Set each review to `w-[85vw]` to let the next card peek slightly on the right edge, encouraging horizontal scrolling.
+*   **Desktop Layout**: Preserves the standard grid configuration on larger viewports.
 
-### 5. Customizable Subscription Delivery Intervals
-*   Created an inline frequency dropdown selector inside [ProductHero.tsx](file:///d:/Troopod/src/components/ProductHero.tsx) subscription tier: choose between 30, 45, or 60 days.
-*   Updates the text within the option card dynamically: `"Delivery every 45 days. Skip or cancel anytime."`
-*   Passes the interval variable to `handleAddToCart` in `App.tsx` and maps it with unique IDs: `collagen-subscription-45days` vs. `collagen-subscription-30days`.
-*   This registers separate subscription lines inside the cart, displaying the specific frequency chosen for each item.
+### 5. Related Products Grid Columns & Quick Add Hover Fix [NEW]
+*   **2-Column Mobile Grid**: Refactored the related product list from a single oversized column on mobile to 2 columns in [App.tsx](file:///d:/Troopod/src/App.tsx), utilizing space efficiently.
+*   **Touch-Visible Buttons**: Toggled the **Quick Add** buttons to be always visible (`opacity-100`) on touchscreens overlaying the image cards. On desktop, they retain the sleek mouse-hover slide-up triggers (`md:opacity-0 md:group-hover:opacity-100`).
 
-### 6. Interactive Gallery Carousel
-*   Added previous/next overlay arrows directly inside the main image in [ProductHero.tsx](file:///d:/Troopod/src/components/ProductHero.tsx).
-*   Configured overlay button clicks to use `e.stopPropagation()` so clicking chevrons cycles the image array index but prevents mounting the Lightbox modal.
-*   Enabled desktop mouse-hover animations (chevrons fade in smoothly only on hover) while ensuring they remain visible as easy tap targets on mobile viewports.
-*   Added active dots pagination indicator underneath the main image container on mobile layouts to track position.
+### 6. Checkout Numeric Keypad Support & MM/YY Formatting [NEW]
+*   **Virtual Numeric Keypad**: Added `inputMode="numeric"` and `pattern="[0-9]*"` parameters to numeric payment inputs (Card Number, CVV, Expiry Date) inside [CartDrawer.tsx](file:///d:/Troopod/src/components/CartDrawer.tsx). This prompts mobile devices to automatically open the number pad instead of standard text layouts.
+*   **Auto-Formatting Expiry Dates**: Upgraded Expiry Date inputs to automatically append "/" delimiters when typing (e.g. typing `1229` instantly formats to `12/29`), simplifying mobile checkouts.
+
+### 7. Layout Offsets
+*   **Dynamic Bottom Padding**: Tied body offsets to the visibility status of the sticky bottom cart bar. Padding is added (`pb-24`) only when the sticky cart is visible, preventing blank white spaces at the bottom of the screen.
 
 ---
 
-## Verification Result
+## Verification Results
 
-All features compile clean. The Vite dev server is hot-reloading smoothly and all integrations are production-ready.
+*   All TSX structures compile cleanly without compilation errors.
+*   Vite development server supports Hot Module Reloading for instant preview rendering.
+*   All layouts adapt dynamically to responsive viewports.

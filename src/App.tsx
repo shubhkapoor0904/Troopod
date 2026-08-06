@@ -197,7 +197,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white pb-20 md:pb-0">
+    <div className={`min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white transition-all duration-300 ${showStickyCart ? 'pb-24 md:pb-0' : 'pb-0'}`}>
       {/* Announcement Bar */}
       <div className="bg-primary text-primary-foreground text-center py-2 px-4 text-xs font-medium tracking-wide uppercase">
         Free Shipping on all orders over $50. Plus, get a free gift!
@@ -266,7 +266,8 @@ export default function App() {
             <p className="text-muted-foreground max-w-2xl mx-auto">Not all collagen is created equal. See why our Korean Marine Collagen stands above the rest.</p>
           </div>
           
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse min-w-[600px]">
               <thead>
                 <tr>
@@ -298,6 +299,46 @@ export default function App() {
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Stacked Card View */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {[
+              {
+                feature: "Bioavailability",
+                wellbeing: "High (1.5x better)",
+                standard: "Medium"
+              },
+              {
+                feature: "Source",
+                wellbeing: "Wild-Caught Deep Sea",
+                standard: "Farm Raised Cattle"
+              },
+              {
+                feature: "Taste & Odor",
+                wellbeing: "Completely Unflavored",
+                standard: "Often Chalky"
+              },
+              {
+                feature: "Collagen Types",
+                wellbeing: "Type 1 & 3",
+                standard: "Varies"
+              }
+            ].map((row, i) => (
+              <div key={i} className="bg-white rounded-2xl p-5 border border-border shadow-sm">
+                <h4 className="font-serif text-base font-bold text-primary mb-3 border-b border-secondary pb-2">{row.feature}</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-primary/5 rounded-xl p-3 border border-primary/10">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-primary block mb-1">Wellbeing Marine</span>
+                    <span className="font-bold text-primary text-sm">{row.wellbeing}</span>
+                  </div>
+                  <div className="bg-secondary/50 rounded-xl p-3">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block mb-1">Standard Bovine</span>
+                    <span className="text-muted-foreground text-sm font-medium">{row.standard}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -358,7 +399,7 @@ export default function App() {
             </a>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
             {relatedProducts.map((product, i) => (
               <div key={i} className="group cursor-pointer">
                 <div className="aspect-square bg-secondary rounded-2xl overflow-hidden mb-4 relative">
@@ -367,25 +408,25 @@ export default function App() {
                   <button 
                     onClick={(e) => { e.preventDefault(); handleQuickAdd(i); }}
                     disabled={quickAdding === i}
-                    className={`absolute bottom-4 left-4 right-4 font-bold py-3 rounded-xl transition-all shadow-lg cursor-pointer ${
+                    className={`absolute bottom-2 md:bottom-4 left-2 md:left-4 right-2 md:right-4 font-bold py-2.5 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm transition-all shadow-lg cursor-pointer ${
                       quickAdding === i 
                         ? 'bg-green-600 text-white opacity-100 translate-y-0' 
-                        : 'bg-white text-primary opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-gray-50'
+                        : 'bg-white/95 text-primary opacity-100 md:opacity-0 translate-y-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0 hover:bg-gray-50'
                     }`}
                   >
                     {quickAdding === i ? 'Added!' : 'Quick Add'}
                   </button>
                 </div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors">{product.name}</h3>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                <div className="flex flex-col md:flex-row md:justify-between items-start gap-1 md:gap-4">
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm md:text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1">{product.name}</h3>
+                    <div className="flex items-center gap-1 text-xs md:text-sm text-muted-foreground">
+                      <Star className="w-3.5 h-3.5 md:w-4 md:h-4 fill-amber-400 text-amber-400" />
                       <span className="font-medium text-foreground">{product.rating}</span>
                       <span>({product.reviews})</span>
                     </div>
                   </div>
-                  <span className="font-bold">${product.price}</span>
+                  <span className="font-bold text-sm md:text-base">${product.price}</span>
                 </div>
               </div>
             ))}

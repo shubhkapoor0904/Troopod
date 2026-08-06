@@ -28,6 +28,34 @@ export default function ProductHero({
   const [activeGalleryImage, setActiveGalleryImage] = useState(0);
   const [subscriptionInterval, setSubscriptionInterval] = useState('30 days');
 
+  // Touch swipe states
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      setActiveGalleryImage(prev => (prev + 1) % gallery.length);
+    } else if (isRightSwipe) {
+      setActiveGalleryImage(prev => (prev - 1 + gallery.length) % gallery.length);
+    }
+  };
+
   const MSRP = 54.99;
   const onetimePrice = 44.99;
   const subPrice = 35.99;
@@ -45,11 +73,15 @@ export default function ProductHero({
           <div 
             className="aspect-square bg-secondary rounded-2xl overflow-hidden relative group cursor-zoom-in"
             onClick={() => onOpenLightbox(activeGalleryImage)}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             <img 
               src={gallery[activeGalleryImage]} 
               alt="Korean Marine Collagen Peptides product view" 
-              className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+              className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105 select-none"
+              draggable="false"
             />
             <div className="absolute top-4 left-4 flex gap-2">
               <span className="bg-white text-primary text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Best Seller</span>
@@ -97,12 +129,12 @@ export default function ProductHero({
               />
             ))}
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-2 snap-x hide-scrollbar">
+          <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory hide-scrollbar">
             {gallery.map((src, i) => (
               <button 
                 key={i} 
                 onClick={() => setActiveGalleryImage(i)}
-                className={`flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 snap-start ${i === activeGalleryImage ? 'border-primary' : 'border-transparent opacity-70'} hover:opacity-100 transition-all`}
+                className={`flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 snap-start snap-always ${i === activeGalleryImage ? 'border-primary' : 'border-transparent opacity-70'} hover:opacity-100 transition-all`}
               >
                 <img src={src} alt={`Gallery thumbnail ${i + 1}`} className="w-full h-full object-cover" />
               </button>

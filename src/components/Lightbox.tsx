@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface LightboxProps {
@@ -16,6 +16,32 @@ export default function Lightbox({
   onClose,
   onChangeIndex,
 }: LightboxProps) {
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      onChangeIndex((imageIndex + 1) % gallery.length);
+    } else if (isRightSwipe) {
+      onChangeIndex((imageIndex - 1 + gallery.length) % gallery.length);
+    }
+  };
 
   // Keyboard navigation
   useEffect(() => {
@@ -86,11 +112,15 @@ export default function Lightbox({
         <div 
           className="relative max-h-[70vh] max-w-[85vw] md:max-w-3xl flex justify-center items-center overflow-hidden rounded-xl bg-neutral-900 shadow-2xl"
           onClick={(e) => e.stopPropagation()}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <img 
             src={gallery[imageIndex]} 
             alt={`Product view ${imageIndex + 1}`} 
-            className="object-contain max-h-[70vh] w-auto h-auto transition-transform duration-500 scale-100 hover:scale-105"
+            className="object-contain max-h-[70vh] w-auto h-auto transition-transform duration-500 scale-100 hover:scale-105 select-none"
+            draggable="false"
           />
         </div>
 

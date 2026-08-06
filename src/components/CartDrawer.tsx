@@ -184,10 +184,12 @@ export default function CartDrawer({
                   />
                 </div>
 
-                <div className="border-t border-border pt-4 mt-2">
+                 <div className="border-t border-border pt-4 mt-2">
                   <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-foreground">Card Number</label>
                   <input 
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={cardNumber}
                     onChange={(e) => setCardNumber(e.target.value.replace(/\s?/g, '').replace(/(\d{4})/g, '$1 ').trim())}
                     maxLength={19}
@@ -202,8 +204,15 @@ export default function CartDrawer({
                     <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-foreground">Expiry Date</label>
                     <input 
                       type="text"
+                      inputMode="numeric"
                       value={expiry}
-                      onChange={(e) => setExpiry(e.target.value)}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/\D/g, '');
+                        if (val.length > 2) {
+                          val = val.slice(0, 2) + '/' + val.slice(2, 4);
+                        }
+                        setExpiry(val);
+                      }}
                       placeholder="MM/YY"
                       maxLength={5}
                       className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-foreground"
@@ -214,6 +223,8 @@ export default function CartDrawer({
                     <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-foreground">CVV</label>
                     <input 
                       type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={cvv}
                       onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
                       maxLength={3}

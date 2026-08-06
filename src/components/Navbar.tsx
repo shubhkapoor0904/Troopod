@@ -51,8 +51,14 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
 
       {/* Mobile Drawer Overlay */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="fixed inset-y-0 left-0 w-64 bg-background p-6 shadow-xl flex flex-col justify-between animate-in slide-in-from-left duration-300">
+        <div 
+          className="md:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div 
+            className="fixed inset-y-0 left-0 w-64 bg-background p-6 shadow-xl flex flex-col justify-between animate-in slide-in-from-left duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div>
               <div className="flex justify-between items-center mb-8">
                 <a href="#" className="font-serif text-xl font-bold tracking-tight text-primary">
