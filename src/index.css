@@ -34,3 +34,19 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   width: 0px;
   background: transparent;
 }
+
+@keyframes slideInFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-in-fade {
+  animation: slideInFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

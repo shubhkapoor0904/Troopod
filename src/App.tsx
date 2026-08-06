@@ -19,6 +19,15 @@ import {
   ArrowRight
 } from 'lucide-react';
 
+interface Review {
+  name: string;
+  title: string;
+  text: string;
+  rating: number;
+  verified: boolean;
+  date: string;
+}
+
 const faqs = [
   { 
     q: "When will I see results?", 
@@ -76,6 +85,65 @@ export default function App() {
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [quickAdding, setQuickAdding] = useState<number | null>(null);
 
+  // States for interactive reviews
+  const [newReviewName, setNewReviewName] = useState('');
+  const [newReviewTitle, setNewReviewTitle] = useState('');
+  const [newReviewText, setNewReviewText] = useState('');
+  const [newReviewRating, setNewReviewRating] = useState(5);
+  const [hoveredRating, setHoveredRating] = useState<number | null>(null);
+  const [formError, setFormError] = useState('');
+  const [addedRatings, setAddedRatings] = useState<number[]>([]);
+
+  const [reviews, setReviews] = useState<Review[]>([
+    { 
+      name: "Sarah M.", 
+      title: "Glowing Skin in 3 Weeks", 
+      text: "I've tried so many collagen brands, but this one actually works. My skin looks more plump and my nails are finally growing without breaking.",
+      rating: 5,
+      verified: true,
+      date: "2 weeks ago"
+    },
+    { 
+      name: "Jessica T.", 
+      title: "Dissolves Perfectly", 
+      text: "I love that it's completely unflavored and dissolves instantly in my morning coffee. No clumps, no fishy taste. Just perfect!",
+      rating: 5,
+      verified: true,
+      date: "3 weeks ago"
+    },
+    { 
+      name: "Emily R.", 
+      title: "Joint Pain Gone", 
+      text: "Not only does my hair look fuller, but the nagging pain in my knees after running has significantly decreased. I'm a subscriber for life.",
+      rating: 5,
+      verified: true,
+      date: "1 month ago"
+    }
+  ]);
+
+  const baseCounts = {
+    5: 1170,
+    4: 90,
+    3: 20,
+    2: 4,
+    1: 0
+  };
+
+  const currentCounts = { ...baseCounts };
+  addedRatings.forEach(r => {
+    if (r >= 1 && r <= 5) {
+      currentCounts[r as 1 | 2 | 3 | 4 | 5]++;
+    }
+  });
+
+  const totalReviews = 1284 + addedRatings.length;
+  const totalRatingSum = (1170 * 5 + 90 * 4 + 20 * 3 + 4 * 2) + addedRatings.reduce((sum, r) => sum + r, 0);
+  const averageRating = totalReviews > 0 ? (totalRatingSum / totalReviews).toFixed(1) : '0.0';
+
+  const getPercent = (stars: 1 | 2 | 3 | 4 | 5) => {
+    return totalReviews > 0 ? Math.round((currentCounts[stars] / totalReviews) * 100) : 0;
+  };
+
   const handleQuickAdd = (index: number) => {
     setQuickAdding(index);
     setCartCount(prev => prev + 1);
@@ -114,6 +182,40 @@ export default function App() {
       setIsAdding(false);
       setQuantity(1);
     }, 600);
+  };
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReviewName.trim() || !newReviewTitle.trim() || !newReviewText.trim()) {
+      setFormError('Please fill out all fields.');
+      return;
+    }
+    
+    const newReview: Review = {
+      name: newReviewName.trim(),
+      title: newReviewTitle.trim(),
+      text: newReviewText.trim(),
+      rating: newReviewRating,
+      verified: true,
+      date: 'Just now'
+    };
+
+    setReviews(prev => [newReview, ...prev]);
+    setAddedRatings(prev => [...prev, newReviewRating]);
+
+    // Reset form
+    setNewReviewName('');
+    setNewReviewTitle('');
+    setNewReviewText('');
+    setNewReviewRating(5);
+    setFormError('');
+    setReviewSubmitted(true);
+    setShowReviewForm(false);
+
+    // Clear success message after 4 seconds
+    setTimeout(() => {
+      setReviewSubmitted(false);
+    }, 4000);
   };
 
   return (
@@ -212,7 +314,7 @@ export default function App() {
                   ))}
                 </div>
                 <a href="#reviews" className="text-sm font-medium underline underline-offset-4 hover:text-primary transition-colors">
-                  4.9/5 (1,284 Reviews)
+                  {averageRating}/5 ({totalReviews.toLocaleString()} Reviews)
                 </a>
               </div>
 
@@ -548,13 +650,13 @@ export default function App() {
                       <Star key={i} className="h-6 w-6 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <span className="font-bold text-2xl">4.9</span>
+                  <span className="font-bold text-2xl">{averageRating}</span>
                 </div>
-                <p className="text-muted-foreground text-sm">Based on 1,284 verified reviews</p>
+                <p className="text-muted-foreground text-sm">Based on {totalReviews.toLocaleString()} verified reviews</p>
                 {!showReviewForm && !reviewSubmitted ? (
                   <button 
                     onClick={() => setShowReviewForm(true)}
-                    className="mt-6 border-2 border-primary text-primary font-bold px-6 py-2 rounded-xl hover:bg-primary hover:text-white transition-colors"
+                    className="mt-6 border-2 border-primary text-primary font-bold px-6 py-2 rounded-xl hover:bg-primary hover:text-white transition-colors cursor-pointer"
                   >
                     Write a Review
                   </button>
@@ -563,71 +665,138 @@ export default function App() {
                     <Check className="w-5 h-5" /> Review submitted!
                   </div>
                 ) : (
-                  <div className="mt-6 text-left animate-in fade-in slide-in-from-top-4">
-                    <div className="flex gap-1 mb-2">
-                      {[1,2,3,4,5].map(s => <Star key={s} className="w-6 h-6 text-amber-400 hover:fill-amber-400 cursor-pointer transition-all" />)}
+                  <form onSubmit={handleSubmitReview} className="mt-6 text-left bg-white p-6 rounded-2xl border border-border shadow-sm animate-in fade-in slide-in-from-top-4">
+                    <div className="mb-4">
+                      <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-foreground">Rating</label>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setNewReviewRating(star)}
+                            onMouseEnter={() => setHoveredRating(star)}
+                            onMouseLeave={() => setHoveredRating(null)}
+                            className="focus:outline-none cursor-pointer transition-transform active:scale-95"
+                          >
+                            <Star 
+                              className={`w-6 h-6 transition-colors ${
+                                star <= (hoveredRating !== null ? hoveredRating : newReviewRating)
+                                  ? 'fill-amber-400 text-amber-400' 
+                                  : 'text-muted-foreground/30 hover:text-amber-400'
+                              }`}
+                            />
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <textarea 
-                      className="w-full border border-border rounded-xl p-3 text-sm mb-3 focus:outline-none focus:border-primary resize-none" 
-                      rows={3} 
-                      placeholder="What did you think?"
-                    />
+
+                    <div className="mb-3">
+                      <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-foreground">Name</label>
+                      <input 
+                        type="text"
+                        value={newReviewName}
+                        onChange={(e) => setNewReviewName(e.target.value)}
+                        className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" 
+                        placeholder="Your Name (e.g. Jane D.)"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-foreground">Title</label>
+                      <input 
+                        type="text"
+                        value={newReviewTitle}
+                        onChange={(e) => setNewReviewTitle(e.target.value)}
+                        className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" 
+                        placeholder="Headline (e.g. Life changing!)"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-foreground">Review</label>
+                      <textarea 
+                        value={newReviewText}
+                        onChange={(e) => setNewReviewText(e.target.value)}
+                        className="w-full border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none" 
+                        rows={3} 
+                        placeholder="What did you think of the product?"
+                      />
+                    </div>
+
+                    {formError && (
+                      <p className="text-red-500 text-xs font-medium mb-3">{formError}</p>
+                    )}
+
                     <div className="flex gap-2">
                       <button 
-                        onClick={() => { setReviewSubmitted(true); setShowReviewForm(false); }} 
-                        className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors"
+                        type="submit"
+                        className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors cursor-pointer"
                       >
                         Submit
                       </button>
                       <button 
-                        onClick={() => setShowReviewForm(false)} 
-                        className="text-muted-foreground px-4 py-2 text-sm font-medium hover:text-foreground transition-colors"
+                        type="button"
+                        onClick={() => {
+                          setShowReviewForm(false);
+                          setFormError('');
+                          setNewReviewName('');
+                          setNewReviewTitle('');
+                          setNewReviewText('');
+                          setNewReviewRating(5);
+                        }} 
+                        className="text-muted-foreground px-4 py-2 text-sm font-medium hover:text-foreground transition-colors cursor-pointer"
                       >
                         Cancel
                       </button>
                     </div>
-                  </div>
+                  </form>
                 )}
               </div>
               
               <div className="md:w-2/3 w-full">
                 <div className="space-y-3">
-                  {[
-                    { stars: 5, percent: 88 },
-                    { stars: 4, percent: 9 },
-                    { stars: 3, percent: 2 },
-                    { stars: 2, percent: 1 },
-                    { stars: 1, percent: 0 },
-                  ].map((row) => (
-                    <div key={row.stars} className="flex items-center gap-4 text-sm">
-                      <span className="w-12 flex items-center gap-1 font-medium">{row.stars} <Star className="w-3 h-3 fill-amber-400 text-amber-400" /></span>
-                      <div className="flex-1 h-2 bg-border rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-400 rounded-full" style={{ width: `${row.percent}%` }} />
+                  {[5, 4, 3, 2, 1].map((stars) => {
+                    const percent = getPercent(stars as 1 | 2 | 3 | 4 | 5);
+                    return (
+                      <div key={stars} className="flex items-center gap-4 text-sm">
+                        <span className="w-12 flex items-center gap-1 font-medium">{stars} <Star className="w-3 h-3 fill-amber-400 text-amber-400" /></span>
+                        <div className="flex-1 h-2 bg-border rounded-full overflow-hidden">
+                          <div className="h-full bg-amber-400 rounded-full" style={{ width: `${percent}%` }} />
+                        </div>
+                        <span className="w-10 text-right text-muted-foreground">{percent}%</span>
                       </div>
-                      <span className="w-10 text-right text-muted-foreground">{row.percent}%</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                { name: "Sarah M.", title: "Glowing Skin in 3 Weeks", text: "I've tried so many collagen brands, but this one actually works. My skin looks more plump and my nails are finally growing without breaking." },
-                { name: "Jessica T.", title: "Dissolves Perfectly", text: "I love that it's completely unflavored and dissolves instantly in my morning coffee. No clumps, no fishy taste. Just perfect!" },
-                { name: "Emily R.", title: "Joint Pain Gone", text: "Not only does my hair look fuller, but the nagging pain in my knees after running has significantly decreased. I'm a subscriber for life." }
-              ].map((review, i) => (
-                <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-border/50">
-                  <div className="flex mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                    ))}
+              {reviews.slice(0, 3).map((review, i) => (
+                <div key={`${review.name}-${review.date}-${i}`} className="bg-white p-8 rounded-2xl shadow-sm border border-border/50 flex flex-col justify-between animate-slide-in-fade">
+                  <div>
+                    <div className="flex mb-4 gap-0.5">
+                      {[...Array(5)].map((_, idx) => (
+                        <Star 
+                          key={idx} 
+                          className={`h-4 w-4 ${idx < review.rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/20'}`} 
+                        />
+                      ))}
+                    </div>
+                    <h4 className="font-bold text-lg mb-2">{review.title}</h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-6">"{review.text}"</p>
                   </div>
-                  <h4 className="font-bold text-lg mb-2">{review.title}</h4>
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-6">"{review.text}"</p>
-                  <p className="font-medium text-sm text-primary flex items-center gap-2">
-                    {review.name} <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Verified Buyer</span>
-                  </p>
+                  <div className="flex justify-between items-center mt-auto border-t border-secondary pt-4">
+                    <p className="font-medium text-sm text-primary flex items-center gap-2">
+                      {review.name} 
+                      {review.verified && (
+                        <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Verified Buyer</span>
+                      )}
+                    </p>
+                    {review.date && (
+                      <span className="text-xs text-muted-foreground">{review.date}</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -737,7 +906,7 @@ export default function App() {
             <div>
               <h4 className="font-bold text-sm text-foreground">Korean Marine Collagen Peptides</h4>
               <div className="text-xs text-muted-foreground">
-                <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline mb-0.5" /> 4.9 (1,284)
+                <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline mb-0.5" /> {averageRating} ({totalReviews.toLocaleString()})
               </div>
             </div>
           </div>
