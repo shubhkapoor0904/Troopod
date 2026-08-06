@@ -3,9 +3,10 @@ import { Menu, ShoppingBag, X } from 'lucide-react';
 
 interface NavbarProps {
   cartCount: number;
+  onCartClick: () => void;
 }
 
-export default function Navbar({ cartCount }: NavbarProps) {
+export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -33,7 +34,10 @@ export default function Navbar({ cartCount }: NavbarProps) {
           </div>
 
           <div className="flex items-center">
-            <button className="p-2 hover:bg-muted rounded-full transition-colors relative cursor-pointer text-foreground">
+            <button 
+              onClick={onCartClick}
+              className="p-2 hover:bg-muted rounded-full transition-colors relative cursor-pointer text-foreground"
+            >
               <ShoppingBag className="h-5 w-5" />
               {cartCount > 0 && (
                 <span className="absolute top-1 right-1 bg-primary text-white text-[10px] font-bold h-3.5 w-3.5 flex items-center justify-center rounded-full">

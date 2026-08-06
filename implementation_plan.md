@@ -1,85 +1,85 @@
-# Monolithic App Refactoring & Modular Component Structure
+# Implementation Plan — Interactive Cart Drawer & Checkout Flow
 
-Refactoring the single-file [App.tsx](file:///d:/Troopod/src/App.tsx) into a structured folder layout. This improves code readability, testability, and conforms to standard production react structures suited for Vercel deployment.
+Adding a fully operational shopping cart drawer and checkout simulator. This connects the store buttons (Add to Cart, Quick Add) with a cohesive, state-driven cart drawer sliding in from the right.
 
-## Proposed Component State Map
+## Proposed State & Layout Flow
 
-To keep the application simple and performant without introducing heavy state managers (like Redux or Context), we will lift shared state to `App.tsx` and pass them down via typed props.
+We will store `cartItems` in [App.tsx](file:///d:/Troopod/src/App.tsx) and pass state management callbacks down to the new [CartDrawer.tsx](file:///d:/Troopod/src/components/CartDrawer.tsx) component.
 
-*   `cartCount`: Shared between `Navbar` and `ProductHero`.
-*   `reviews` / `addedRatings`: Shared between `ProductHero` (rating stars), `Reviews` (breakdowns & cards), and `StickyCart`.
-*   `purchaseType` / `quantity`: Shared between `ProductHero` (the control selector) and `StickyCart` (to compute currentTotal).
-
-```mermaid
-graph TD
-    App[App.tsx State Controller]
-    App --> Navbar[Navbar]
-    App --> ProductHero[ProductHero]
-    App --> Reviews[Reviews]
-    App --> StickyCart[StickyCart]
-    ProductHero --> Lightbox[Lightbox]
-    App --> FaqSection[FaqSection]
-    App --> Footer[Footer]
+```
++------------------------------------------+
+|  Navbar (Clicks Bag) -> Toggles isCartOpen |
++------------------------------------------+
+                      |
+                      v
++------------------------------------------+
+|  App.tsx (Shares cartItems & handlers)    |
++------------------------------------------+
+      |                   |
+      v                   v
++-------------------+ +--------------------+
+|  ProductHero      | |  CartDrawer        |
+|  (Adds Collagen)  | |  (Slide overlay)   |
++-------------------+ |  - Modify Qty      |
+                      |  - Remove items    |
+                      |  - Checkout Form   |
+                      |  - Success Screen  |
+                      +--------------------+
 ```
 
 ---
 
 ## Proposed Changes
 
-### Core Types & Static Data
+### Core Types
 
-#### [NEW] [index.ts](file:///d:/Troopod/src/types/index.ts)
-Declares types to be shared between components.
-*   `Review`: Defines the name, title, text, rating, verified badge, and date.
-*   `Product`: Defines name, price, rating, reviews count, and image URL for related products.
-
-#### [NEW] [productData.ts](file:///d:/Troopod/src/data/productData.ts)
-Moves all hardcoded copy arrays out of components:
-*   `faqs`: The list of questions and answers.
-*   `relatedProducts`: Array of related item objects.
-*   `gallery`: Array of product image URLs.
-
----
-
-### Component Architecture
-
-#### [NEW] [Navbar.tsx](file:///d:/Troopod/src/components/Navbar.tsx)
-Extract navigation links, logo, and cart bag icon with `cartCount` prop indicator.
-
-#### [NEW] [Lightbox.tsx](file:///d:/Troopod/src/components/Lightbox.tsx)
-Handles the full-screen interactive view.
-*   Props: `isOpen: boolean`, `imageIndex: number`, `onClose: () => void`, `onChangeIndex: (index: number) => void`.
-*   Includes keyboard navigation and scroll lock effects.
-
-#### [NEW] [ProductHero.tsx](file:///d:/Troopod/src/components/ProductHero.tsx)
-Houses the gallery preview layout, purchase tier toggles, and quantity selectors.
-*   Props: `averageRating: string`, `totalReviews: number`, `onAddToCart: (quantity: number) => void`, `purchaseType: 'onetime' | 'subscription'`, `setPurchaseType: (type: 'onetime' | 'subscription') => void`, `quantity: number`, `setQuantity: (q: number) => void`, `isAdding: boolean`.
-*   Triggers the `Lightbox` open handler when clicking the main image.
-
-#### [NEW] [Reviews.tsx](file:///d:/Troopod/src/components/Reviews.tsx)
-Container for the testimonials section.
-*   Props: `reviews: Review[]`, `averageRating: string`, `totalReviews: number`, `getPercent: (stars: 1|2|3|4|5) => number`, `onSubmitReview: (name: string, title: string, text: string, rating: number) => void`.
-
-#### [NEW] [FaqSection.tsx](file:///d:/Troopod/src/components/FaqSection.tsx)
-Accordion layout of questions and answers.
-
-#### [NEW] [Footer.tsx](file:///d:/Troopod/src/components/Footer.tsx)
-Standard HTML5 semantic footer.
+#### [MODIFY] [index.ts](file:///d:/Troopod/src/types/index.ts)
+Add the `CartItem` model:
+```typescript
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  type?: 'subscription' | 'onetime';
+}
+```
 
 ---
 
-### Core Controller
+### Component Modifications & Additions
+
+#### [MODIFY] [Navbar.tsx](file:///d:/Troopod/src/components/Navbar.tsx)
+*   Add `onCartClick: () => void` prop.
+*   Trigger `onCartClick` when user clicks the shopping bag button.
+
+#### [NEW] [CartDrawer.tsx](file:///d:/Troopod/src/components/CartDrawer.tsx)
+Create a new component containing:
+*   A slide-out drawer container (`fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white`).
+*   Scrollable itemized list displaying thumbnails, pricing, and quantity manipulators (`+` / `-`).
+*   Empty-state layout prompting the user to continue shopping.
+*   Subtotal, Shipping (Free over $50, else $4.99), and estimated tax calculator.
+*   **Checkout Simulator**: Opens a modal overlay inside the drawer with fields for name, shipping address, card details, and a dynamic "Pay" button. Submitting places a mock order and shows a success checkmark before clearing the cart.
+
+---
+
+### Core Controller Integration
 
 #### [MODIFY] [App.tsx](file:///d:/Troopod/src/App.tsx)
-*   Remove all raw layouts and inline data arrays.
-*   Maintain main shared states and coordinate prop bindings to sub-components.
+*   Replace number state `cartCount` with array state `cartItems: CartItem[]`.
+*   Maintain `isCartOpen: boolean` state.
+*   Implement `onAddToCart` to append/merge Collagen with the selected quantity and subscription tier.
+*   Implement `onQuickAdd` to map related product index to its details and add/merge it into `cartItems`.
+*   Implement `updateCartItemQuantity` and `removeCartItem` methods.
+*   Render the `<CartDrawer />` component.
 
 ---
 
 ## Verification Plan
 
-### Automated Build Verification
-*   We will run `pnpm run build` locally once the structure is completed to ensure zero TypeScript errors or lints occur.
-
 ### Manual Verification
-*   Check the Figma Make preview panel to confirm navigation, image lightbox click, write-a-review inputs, subtotal calculation, and responsive styling render identically to the current layout.
+*   Open Figma Make preview and add Collagen. The Cart Drawer should slide open showing the added product.
+*   Test increasing/decreasing quantity in the cart drawer. Subtotal must update instantly.
+*   Add a related product via "Quick Add". It should merge or add as a separate item in the drawer.
+*   Test mock checkout by filling in the details. Form should validate fields and show an order confirmation.

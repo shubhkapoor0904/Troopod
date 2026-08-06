@@ -16,18 +16,25 @@ import Lightbox from './components/Lightbox';
 import Reviews from './components/Reviews';
 import FaqSection from './components/FaqSection';
 import Footer from './components/Footer';
+import CartDrawer from './components/CartDrawer';
 
 // Static Data & Types
 import { gallery, relatedProducts } from './data/productData';
-import { Review } from './types';
+import { Review, CartItem } from './types';
 
 export default function App() {
   const [quantity, setQuantity] = useState(1);
   const [purchaseType, setPurchaseType] = useState<'onetime' | 'subscription'>('subscription');
-  const [cartCount, setCartCount] = useState(0);
   const [isAdding, setIsAdding] = useState(false);
   const [showStickyCart, setShowStickyCart] = useState(false);
   const [quickAdding, setQuickAdding] = useState<number | null>(null);
+
+  // Cart Drawer State
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Derived cart count
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   // Lightbox State
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -81,17 +88,74 @@ export default function App() {
   // Handlers
   const handleAddToCart = () => {
     setIsAdding(true);
-    setCartCount(prev => prev + quantity);
+    
+    const itemId = `collagen-${purchaseType}`;
+    const price = purchaseType === 'subscription' ? subPrice : onetimePrice;
+    
+    setCartItems(prev => {
+      const existing = prev.find(item => item.id === itemId);
+      if (existing) {
+        return prev.map(item => 
+          item.id === itemId ? { ...item, quantity: item.quantity + quantity } : item
+        );
+      }
+      return [...prev, {
+        id: itemId,
+        name: "Korean Marine Collagen Peptides",
+        price,
+        quantity,
+        image: gallery[0],
+        type: purchaseType
+      }];
+    });
+
     setTimeout(() => {
       setIsAdding(false);
       setQuantity(1);
+      setIsCartOpen(true); // Open the drawer immediately on add to cart for high-end feel!
     }, 600);
   };
 
   const handleQuickAdd = (index: number) => {
     setQuickAdding(index);
-    setCartCount(prev => prev + 1);
-    setTimeout(() => setQuickAdding(null), 600);
+    
+    const product = relatedProducts[index];
+    const itemId = `product-${index}`;
+    
+    setCartItems(prev => {
+      const existing = prev.find(item => item.id === itemId);
+      if (existing) {
+        return prev.map(item => 
+          item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prev, {
+        id: itemId,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        image: product.image
+      }];
+    });
+
+    setTimeout(() => {
+      setQuickAdding(null);
+      setIsCartOpen(true); // Open the drawer immediately on quick add too!
+    }, 600);
+  };
+
+  const handleUpdateQuantity = (id: string, qty: number) => {
+    setCartItems(prev => prev.map(item => 
+      item.id === id ? { ...item, quantity: qty } : item
+    ));
+  };
+
+  const handleRemoveItem = (id: string) => {
+    setCartItems(prev => prev.filter(item => item.id !== id));
+  };
+
+  const handleClearCart = () => {
+    setCartItems([]);
   };
 
   const handleSubmitReview = (name: string, title: string, text: string, rating: number) => {
@@ -139,7 +203,7 @@ export default function App() {
       </div>
 
       {/* Navigation */}
-      <Navbar cartCount={cartCount} />
+      <Navbar cartCount={cartCount} onCartClick={() => setIsCartOpen(true)} />
 
       <main>
         {/* Product Hero Section */}
@@ -373,6 +437,16 @@ export default function App() {
         gallery={gallery}
         onClose={() => setIsLightboxOpen(false)}
         onChangeIndex={(idx) => setLightboxImageIndex(idx)}
+      />
+
+      {/* Cart Drawer */}
+      <CartDrawer 
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cartItems}
+        onUpdateQuantity={handleUpdateQuantity}
+        onRemoveItem={handleRemoveItem}
+        onClearCart={handleClearCart}
       />
     </div>
   );

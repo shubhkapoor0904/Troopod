@@ -1,11 +1,6 @@
-# Refactoring Tasks Checklist
+# Cart Drawer Tasks Checklist
 
-- [x] Create types file `src/types/index.ts`
-- [x] Create static data file `src/data/productData.ts`
-- [x] Create Navbar component `src/components/Navbar.tsx`
-- [x] Create Lightbox component `src/components/Lightbox.tsx`
-- [x] Create Reviews component `src/components/Reviews.tsx`
-- [x] Create ProductHero component `src/components/ProductHero.tsx`
-- [x] Create FaqSection component `src/components/FaqSection.tsx`
-- [x] Create Footer component `src/components/Footer.tsx`
-- [x] Refactor main controller `src/App.tsx`
+- [x] Add `CartItem` type in `src/types/index.ts`
+- [x] Add `onCartClick` callback in `src/components/Navbar.tsx`
+- [x] Create `CartDrawer` component in `src/components/CartDrawer.tsx`
+- [x] Implement cart state logic and render drawer in `src/App.tsx`
