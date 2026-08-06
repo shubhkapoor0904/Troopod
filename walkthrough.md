@@ -1,6 +1,6 @@
-# Walkthrough — Monolithic App Modularization & Cart Drawer & Intervals
+# Walkthrough — Refactoring & Cart & Carousel
 
-I have successfully modularized the monolithic codebase and implemented a fully operational **Shopping Cart Drawer**, **Checkout Simulator**, and **Customizable Subscription Intervals**.
+I have successfully modularized the monolithic codebase and implemented a **Shopping Cart Drawer**, **Checkout Simulator**, **Customizable Delivery Intervals**, and an **Interactive Image Gallery Carousel**.
 
 ## New Files & File Structure
 
@@ -12,7 +12,7 @@ src/
 │   ├── Footer.tsx       # Semantics-friendly footer + newsletter form
 │   ├── Lightbox.tsx     # Zoomable modal overlay & key navigation
 │   ├── Navbar.tsx       # Logo, routes, and mobile navigation drawer
-│   ├── ProductHero.tsx  # Product details, purchase choices with intervals selector
+│   ├── ProductHero.tsx  # Hero details with interactive gallery overlays & intervals
 │   └── Reviews.tsx      # Results stats breakdown and custom inputs form
 ├── data/
 │   └── productData.ts   # Dry data separation for FAQs, Related Products, Gallery
@@ -25,7 +25,7 @@ src/
 
 ---
 
-## Detailed Cart Features Completed
+## Detailed Cart & Gallery Features Completed
 
 ### 1. Unified Cart State Management
 *   Replaced the mock `cartCount` state inside [App.tsx](file:///d:/Troopod/src/App.tsx) with a dynamic `cartItems` array.
@@ -43,11 +43,17 @@ src/
 *   Includes client-side checks to validate full address details and card specifications.
 *   Toggling order submission simulates transaction checks (1.8s load state delay) and returns a premium Order Confirmation banner before clearing the cart state.
 
-### 4. Customizable Subscription Delivery Intervals [NEW]
+### 4. Customizable Subscription Delivery Intervals
 *   Created an inline frequency dropdown selector inside [ProductHero.tsx](file:///d:/Troopod/src/components/ProductHero.tsx) subscription tier: choose between 30, 45, or 60 days.
 *   Updates the text within the option card dynamically: `"Delivery every 45 days. Skip or cancel anytime."`
 *   Passes the interval variable to `handleAddToCart` in `App.tsx` and maps it with unique IDs: `collagen-subscription-45days` vs. `collagen-subscription-30days`.
 *   This registers separate subscription lines inside the cart, displaying the specific frequency chosen for each item.
+
+### 5. Interactive Gallery Carousel [NEW]
+*   Added previous/next overlay arrows directly inside the main image in [ProductHero.tsx](file:///d:/Troopod/src/components/ProductHero.tsx).
+*   Configured overlay button clicks to use `e.stopPropagation()` so clicking chevrons cycles the image array index but prevents mounting the Lightbox modal.
+*   Enabled desktop mouse-hover animations (chevrons fade in smoothly only on hover) while ensuring they remain visible as easy tap targets on mobile viewports.
+*   Added active dots pagination indicator underneath the main image container on mobile layouts to track position.
 
 ---
 

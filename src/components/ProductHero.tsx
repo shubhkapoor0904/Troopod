@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, ChevronRight, Check, Minus, Plus, Truck, Shield, Lock } from 'lucide-react';
+import { Star, ChevronRight, Check, Minus, Plus, Truck, Shield, Lock, ChevronLeft } from 'lucide-react';
 import { gallery } from '../data/productData';
 
 interface ProductHeroProps {
@@ -55,12 +55,47 @@ export default function ProductHero({
               <span className="bg-white text-primary text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Best Seller</span>
               <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Save {savings}%</span>
             </div>
+
+            {/* Left Nav Arrow */}
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveGalleryImage(prev => (prev - 1 + gallery.length) % gallery.length);
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white text-primary rounded-full shadow-md transition-all cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 z-10"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            {/* Right Nav Arrow */}
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveGalleryImage(prev => (prev + 1) % gallery.length);
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white text-primary rounded-full shadow-md transition-all cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 z-10"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+
             {/* Click to Zoom premium overlay */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors flex items-end justify-center pb-6">
               <span className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-sm text-primary text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg transform translate-y-3 group-hover:translate-y-0 transition-all duration-300 pointer-events-none">
                 Click to View Gallery
               </span>
             </div>
+          </div>
+
+          {/* Dots Indicator for Mobile */}
+          <div className="flex justify-center gap-1.5 md:hidden">
+            {gallery.map((_, i) => (
+              <span 
+                key={i} 
+                className={`h-1.5 rounded-full transition-all duration-300 ${i === activeGalleryImage ? 'w-4 bg-primary' : 'w-1.5 bg-muted-foreground/30'}`}
+              />
+            ))}
           </div>
           <div className="flex gap-4 overflow-x-auto pb-2 snap-x hide-scrollbar">
             {gallery.map((src, i) => (

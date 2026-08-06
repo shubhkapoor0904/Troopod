@@ -1,6 +1,5 @@
-# Subscription Interval Tasks Checklist
+# Gallery Carousel Tasks Checklist
 
-- [x] Update `CartItem` type in `src/types/index.ts`
-- [x] Implement interval selector and update callback in `src/components/ProductHero.tsx`
-- [x] Update cart items mapping layout in `src/components/CartDrawer.tsx`
-- [x] Update `handleAddToCart` in `src/App.tsx`
+- [x] Import `ChevronLeft` and `ChevronRight` in `src/components/ProductHero.tsx`
+- [x] Add Chevron overlays on main product image container in `src/components/ProductHero.tsx`
+- [x] Render pagination dots below the main image container on mobile layout in `src/components/ProductHero.tsx`
