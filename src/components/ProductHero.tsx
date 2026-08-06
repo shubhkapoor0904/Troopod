@@ -10,7 +10,7 @@ interface ProductHeroProps {
   quantity: number;
   setQuantity: (q: number) => void;
   isAdding: boolean;
-  onAddToCart: () => void;
+  onAddToCart: (interval?: string) => void;
   onOpenLightbox: (index: number) => void;
 }
 
@@ -26,6 +26,7 @@ export default function ProductHero({
   onOpenLightbox,
 }: ProductHeroProps) {
   const [activeGalleryImage, setActiveGalleryImage] = useState(0);
+  const [subscriptionInterval, setSubscriptionInterval] = useState('30 days');
 
   const MSRP = 54.99;
   const onetimePrice = 44.99;
@@ -122,9 +123,25 @@ export default function ProductHero({
                   <div className={`mt-1 w-5 h-5 rounded-full border flex flex-shrink-0 items-center justify-center ${purchaseType === 'subscription' ? 'border-primary bg-primary' : 'border-muted-foreground'}`}>
                     {purchaseType === 'subscription' && <Check className="w-3 h-3 text-white" />}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <span className="font-bold text-foreground block">Subscribe & Save 35%</span>
-                    <span className="text-sm text-muted-foreground block mt-1">Delivery every 30 days. Skip or cancel anytime.</span>
+                    <span className="text-sm text-muted-foreground block mt-1">Delivery every {subscriptionInterval}. Skip or cancel anytime.</span>
+                    
+                    {/* Interval selector */}
+                    {purchaseType === 'subscription' && (
+                      <div className="mt-3 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <span className="text-xs font-semibold text-foreground/80">Frequency:</span>
+                        <select 
+                          value={subscriptionInterval}
+                          onChange={(e) => setSubscriptionInterval(e.target.value)}
+                          className="bg-secondary border border-border text-foreground text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer font-sans"
+                        >
+                          <option value="30 days">Every 30 days (Recommended)</option>
+                          <option value="45 days">Every 45 days</option>
+                          <option value="60 days">Every 60 days</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="text-right">
@@ -170,7 +187,7 @@ export default function ProductHero({
               </button>
             </div>
             <button 
-              onClick={onAddToCart}
+              onClick={() => onAddToCart(purchaseType === 'subscription' ? subscriptionInterval : undefined)}
               disabled={isAdding}
               className={`flex-1 text-white rounded-xl font-bold py-3 transition-all shadow-lg flex justify-center items-center gap-2 cursor-pointer ${
                 isAdding 

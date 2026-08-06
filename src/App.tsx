@@ -86,10 +86,10 @@ export default function App() {
   }, []);
 
   // Handlers
-  const handleAddToCart = () => {
+  const handleAddToCart = (interval?: string) => {
     setIsAdding(true);
     
-    const itemId = `collagen-${purchaseType}`;
+    const itemId = `collagen-${purchaseType}-${interval || ''}`;
     const price = purchaseType === 'subscription' ? subPrice : onetimePrice;
     
     setCartItems(prev => {
@@ -105,7 +105,8 @@ export default function App() {
         price,
         quantity,
         image: gallery[0],
-        type: purchaseType
+        type: purchaseType,
+        interval
       }];
     });
 

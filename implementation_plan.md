@@ -1,30 +1,25 @@
-# Implementation Plan — Interactive Cart Drawer & Checkout Flow
+# Implementation Plan — Customizable Subscription Intervals
 
-Adding a fully operational shopping cart drawer and checkout simulator. This connects the store buttons (Add to Cart, Quick Add) with a cohesive, state-driven cart drawer sliding in from the right.
+Adding customizable delivery intervals (30, 45, or 60 days) to the "Subscribe & Save" purchase tier. Selecting an interval updates the product details dynamically and flows straight into the cart drawer.
 
-## Proposed State & Layout Flow
-
-We will store `cartItems` in [App.tsx](file:///d:/Troopod/src/App.tsx) and pass state management callbacks down to the new [CartDrawer.tsx](file:///d:/Troopod/src/components/CartDrawer.tsx) component.
+## Proposed Flow
 
 ```
-+------------------------------------------+
-|  Navbar (Clicks Bag) -> Toggles isCartOpen |
-+------------------------------------------+
-                      |
-                      v
-+------------------------------------------+
-|  App.tsx (Shares cartItems & handlers)    |
-+------------------------------------------+
-      |                   |
-      v                   v
-+-------------------+ +--------------------+
-|  ProductHero      | |  CartDrawer        |
-|  (Adds Collagen)  | |  (Slide overlay)   |
-+-------------------+ |  - Modify Qty      |
-                      |  - Remove items    |
-                      |  - Checkout Form   |
-                      |  - Success Screen  |
-                      +--------------------+
++-------------------------------------------------+
+|  ProductHero: Selects Subscription Tiers       |
+|  - Renders Interval Selector (30, 45, 60 days)  |
++-------------------------------------------------+
+                        |
+                        v (Passes interval param)
++-------------------------------------------------+
+|  App.tsx: Appends collagen-subscription-45days  |
+|  as separate items if intervals differ           |
++-------------------------------------------------+
+                        |
+                        v
++-------------------------------------------------+
+|  CartDrawer: Displays "Subscribe (Every 45 days)"|
++-------------------------------------------------+
 ```
 
 ---
@@ -34,7 +29,7 @@ We will store `cartItems` in [App.tsx](file:///d:/Troopod/src/App.tsx) and pass 
 ### Core Types
 
 #### [MODIFY] [index.ts](file:///d:/Troopod/src/types/index.ts)
-Add the `CartItem` model:
+Extend `CartItem` to support `interval` value:
 ```typescript
 export interface CartItem {
   id: string;
@@ -43,43 +38,38 @@ export interface CartItem {
   quantity: number;
   image: string;
   type?: 'subscription' | 'onetime';
+  interval?: string;
 }
 ```
 
 ---
 
-### Component Modifications & Additions
+### Component Modifications
 
-#### [MODIFY] [Navbar.tsx](file:///d:/Troopod/src/components/Navbar.tsx)
-*   Add `onCartClick: () => void` prop.
-*   Trigger `onCartClick` when user clicks the shopping bag button.
+#### [MODIFY] [ProductHero.tsx](file:///d:/Troopod/src/components/ProductHero.tsx)
+*   Add `interval` to the `onAddToCart` parameters: `onAddToCart: (interval?: string) => void`.
+*   Maintain local state `subscriptionInterval: string` (defaults to `"30 days"`).
+*   Under the subscription pricing tier option card, render a custom, inline dropdown selector or horizontal tab button set (30 days, 45 days, 60 days).
+*   When "Add to Cart" is clicked and `purchaseType` is `subscription`, call `onAddToCart(subscriptionInterval)`.
 
-#### [NEW] [CartDrawer.tsx](file:///d:/Troopod/src/components/CartDrawer.tsx)
-Create a new component containing:
-*   A slide-out drawer container (`fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white`).
-*   Scrollable itemized list displaying thumbnails, pricing, and quantity manipulators (`+` / `-`).
-*   Empty-state layout prompting the user to continue shopping.
-*   Subtotal, Shipping (Free over $50, else $4.99), and estimated tax calculator.
-*   **Checkout Simulator**: Opens a modal overlay inside the drawer with fields for name, shipping address, card details, and a dynamic "Pay" button. Submitting places a mock order and shows a success checkmark before clearing the cart.
+#### [MODIFY] [CartDrawer.tsx](file:///d:/Troopod/src/components/CartDrawer.tsx)
+*   In the card rendering logic, if `item.type === 'subscription'`, display `"Subscribe & Save (Every " + item.interval + ")"` instead of just `"Subscribe & Save"`.
 
 ---
 
-### Core Controller Integration
+### Core Controller
 
 #### [MODIFY] [App.tsx](file:///d:/Troopod/src/App.tsx)
-*   Replace number state `cartCount` with array state `cartItems: CartItem[]`.
-*   Maintain `isCartOpen: boolean` state.
-*   Implement `onAddToCart` to append/merge Collagen with the selected quantity and subscription tier.
-*   Implement `onQuickAdd` to map related product index to its details and add/merge it into `cartItems`.
-*   Implement `updateCartItemQuantity` and `removeCartItem` methods.
-*   Render the `<CartDrawer />` component.
+*   Modify `handleAddToCart` signature to accept `interval?: string`.
+*   Set unique item ID: `collagen-${purchaseType}-${interval || ''}`. This ensures that adding a 30-day and a 45-day delivery registers them as separate lines in the cart.
+*   Map `interval` to the new `CartItem` added.
 
 ---
 
 ## Verification Plan
 
 ### Manual Verification
-*   Open Figma Make preview and add Collagen. The Cart Drawer should slide open showing the added product.
-*   Test increasing/decreasing quantity in the cart drawer. Subtotal must update instantly.
-*   Add a related product via "Quick Add". It should merge or add as a separate item in the drawer.
-*   Test mock checkout by filling in the details. Form should validate fields and show an order confirmation.
+*   Open Figma Make preview, select "Subscribe & Save", and choose "45 days" interval. Add to cart.
+*   The cart drawer should open showing Collagen with tag: `"Subscribe & Save (Every 45 days)"`.
+*   Close drawer, change interval to "60 days", and add to cart again.
+*   The drawer should display **two separate line items** (one for 45 days, one for 60 days), each with their own quantity counters and totals.

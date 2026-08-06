@@ -1,6 +1,6 @@
-# Cart Drawer Tasks Checklist
+# Subscription Interval Tasks Checklist
 
-- [x] Add `CartItem` type in `src/types/index.ts`
-- [x] Add `onCartClick` callback in `src/components/Navbar.tsx`
-- [x] Create `CartDrawer` component in `src/components/CartDrawer.tsx`
-- [x] Implement cart state logic and render drawer in `src/App.tsx`
+- [x] Update `CartItem` type in `src/types/index.ts`
+- [x] Implement interval selector and update callback in `src/components/ProductHero.tsx`
+- [x] Update cart items mapping layout in `src/components/CartDrawer.tsx`
+- [x] Update `handleAddToCart` in `src/App.tsx`

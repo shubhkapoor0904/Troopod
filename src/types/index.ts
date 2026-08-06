@@ -22,4 +22,5 @@ export interface CartItem {
   quantity: number;
   image: string;
   type?: 'subscription' | 'onetime';
+  interval?: string;
 }

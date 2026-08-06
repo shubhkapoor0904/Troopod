@@ -283,7 +283,9 @@ export default function CartDrawer({
                         </div>
                         {item.type && (
                           <span className="text-[10px] bg-green-50 text-green-800 font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider inline-block mt-0.5">
-                            {item.type === 'subscription' ? 'Subscribe & Save' : 'One-time'}
+                            {item.type === 'subscription' 
+                              ? `Subscribe (Every ${item.interval || '30 days'})` 
+                              : 'One-time purchase'}
                           </span>
                         )}
                       </div>
