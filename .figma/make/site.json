@@ -1,0 +1,10 @@
+{
+  "description": "This web application offers an enhanced shopping experience for Korean marine collagen peptides, providing detailed product information and user-friendly navigation for health-conscious consumers.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
